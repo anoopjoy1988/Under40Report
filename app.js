@@ -300,7 +300,7 @@ function setupEventListeners() {
     }
 
     if (summaryExportCsvBtn) {
-        summaryExportCsvBtn.addEventListener('click', () => exportToCSV());
+        summaryExportCsvBtn.addEventListener('click', exportSummaryReportCSV);
     }
 
     if (summaryExportPdfBtn) {
@@ -2239,84 +2239,52 @@ if (grandTableHead) {
     });
 }
 
-// CSV Export
+// Dedicated CSV Export for Summary Report
+function exportSummaryReportCSV() {
+    const summaryData = appState.summaryCandidates || [];
+    if (summaryData.length === 0) {
+        showToast('No summary report data to export. Populate from Grand Summary first.', 'error');
+        return;
+    }
+    const headers = [
+        "Candidate Name",
+        "Client name",
+        "Dispatch - Who's fault?",
+        "Leave balance - hrs (CHARMAINE)",
+        "Missing hours",
+        "Comments",
+        "Form of pay",
+        "Informed client"
+    ];
+    const rows = summaryData.map(c => {
+        const comments = c.comments || '';
+        return [
+            c.candidateName,
+            c.clientName || '',
+            c.dispatchFault || '',
+            c.leaveBalance || '',
+            formatHours(c.missingHours),
+            comments,
+            c.formOfPay || '',
+            c.informedClient || ''
+        ];
+    });
+    const csvData = [headers, ...rows];
+    openCsvPreviewModal(csvData, 'Summary_Report', 'Executive Summary Table');
+}
+
+// CSV Export (File Menu - Exclusively for 'Under 40 Hours' and 'All Processed Candidates')
 function exportToCSV() {
     const activeTab = appState.activeTab;
-    const isGrandSummaryActive = activeTab === 'grand_summary' || 
-        (grandSummaryView && grandSummaryView.style.display !== 'none');
 
-    if (isGrandSummaryActive) {
-        exportGrandSummaryCSV();
+    if (activeTab !== 'final' && activeTab !== 'all') {
+        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
         return;
     }
-    
-    if (activeTab === 'summary') {
-        const summaryData = appState.summaryCandidates || [];
-        if (summaryData.length === 0) {
-            showToast('No summary report data to export. Populate from Grand Summary first.', 'error');
-            return;
-        }
-        const headers = [
-            "Candidate Name",
-            "Client name",
-            "Dispatch - Who's fault?",
-            "Leave balance - hrs (CHARMAINE)",
-            "Missing hours",
-            "Comments",
-            "Form of pay",
-            "Informed client"
-        ];
-        const rows = summaryData.map(c => {
-            const comments = c.comments || '';
-            return [
-                c.candidateName,
-                c.clientName || '',
-                c.dispatchFault || '',
-                c.leaveBalance || '',
-                formatHours(c.missingHours),
-                comments,
-                c.formOfPay || '',
-                c.informedClient || ''
-            ];
-        });
-        const csvData = [headers, ...rows];
-        openCsvPreviewModal(csvData, 'Summary_Report', 'Executive Summary Table');
-        return;
-    }
-    
-    if (activeTab === 'report1') {
-        if (!appState.hoursData || appState.hoursData.length === 0) {
-            showToast('No Report 1 data to export.', 'error');
-            return;
-        }
-        const raw = appState.hoursData;
-        const header = raw[0] || [];
-        const excludedIndices = new Set();
-        header.forEach((h, idx) => {
-            const low = String(h || '').trim().toLowerCase();
-            if (low === 'status' || low.includes('candidate type') || low.includes('application title') || low === 'type' || low === 'title') {
-                excludedIndices.add(idx);
-            }
-        });
-        const filteredData = excludedIndices.size > 0
-            ? raw.map(row => row.filter((_, idx) => !excludedIndices.has(idx)))
-            : raw;
-        openCsvPreviewModal(filteredData, 'Working_Hours_Report', 'Working Hours (Report 1)');
-        return;
-    }
-    
-    if (activeTab === 'report2') {
-        if (!appState.leavesData || appState.leavesData.length === 0) {
-            showToast('No Report 2 data to export.', 'error');
-            return;
-        }
-        openCsvPreviewModal(appState.leavesData, 'Leaves_Report', 'Leaves & Sick Details (Report 2)');
-        return;
-    }
-    
+
     // For 'final' and 'all' tabs
     const dataSet = activeTab === 'all' ? appState.allProcessedCandidates : appState.results;
-    if (dataSet.length === 0) {
+    if (!dataSet || dataSet.length === 0) {
         showToast('No results to export.', 'error');
         return;
     }
@@ -2783,13 +2751,8 @@ function savePdfOptionsFromModal() {
 
 function triggerPdfReportPrint(options) {
     const activeTab = appState.activeTab;
-    if (activeTab === 'grand_summary') {
-        exportGrandSummaryPDF(options);
-        return;
-    }
-
-    if (activeTab === 'summary') {
-        exportSummaryReportPDF(options);
+    if (activeTab !== 'final' && activeTab !== 'all') {
+        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
         return;
     }
 
@@ -2800,12 +2763,8 @@ function renderPrintableReport(options) {
     if (!printableReportContainer) return;
 
     const activeTab = appState.activeTab;
-    if (activeTab === 'grand_summary') {
-        exportGrandSummaryPDF(options);
-        return;
-    }
-    if (activeTab === 'summary') {
-        exportSummaryReportPDF(options);
+    if (activeTab !== 'final' && activeTab !== 'all') {
+        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
         return;
     }
 
@@ -2818,100 +2777,8 @@ function renderPrintableReport(options) {
     let countText = '0 records';
     let shortageText = '00:00:00';
 
-    if (activeTab === 'report1') {
-        if (!appState.hoursData || appState.hoursData.length === 0) {
-            showToast('No Report 1 data to export. Please upload working hours report first.', 'error');
-            return;
-        }
-        const raw = appState.hoursData;
-        const header = raw[0] || [];
-        const excludedIndices = new Set();
-        header.forEach((h, idx) => {
-            const low = String(h || '').trim().toLowerCase();
-            if (low === 'status' || low.includes('candidate type') || low.includes('application title') || low === 'type' || low === 'title') {
-                excludedIndices.add(idx);
-            }
-        });
-
-        const printHeaders = header.filter((_, idx) => !excludedIndices.has(idx));
-        const printRows = raw.slice(1).map(row => row.filter((_, idx) => !excludedIndices.has(idx)));
-
-        let thsHtml = printHeaders.map(h => `<th>${escapeHTML(h)}</th>`).join('');
-        let trsHtml = printRows.map((r, rIdx) => {
-            return `<tr><td class="center-col" style="color: #4b5563;">${rIdx + 1}</td>${r.map(cell => `<td style="color: #111827;">${escapeHTML(cell)}</td>`).join('')}</tr>`;
-        }).join('');
-
-        reportDisplayName = 'Report 1: Working Hours';
-        countText = `${printRows.length} records`;
-
-        printHtml = `
-            <div class="print-header-banner">
-                <div class="print-header-left">
-                    <h1 class="print-header-title">Report 1: Working Hours &amp; Shifts</h1>
-                    <p class="print-header-sub">
-                        <strong>Source:</strong> ${escapeHTML(appState.hoursFileName || 'Working Hours CSV')} &bull;
-                        <strong>Total Candidates:</strong> ${printRows.length} Records
-                    </p>
-                </div>
-                <div class="print-header-right">
-                    <div><strong>Generated:</strong> ${escapeHTML(generatedDateStr)}</div>
-                </div>
-            </div>
-            <table class="print-table">
-                <thead>
-                    <tr><th class="center-col" style="width: 35px;">#</th>${thsHtml}</tr>
-                </thead>
-                <tbody>${trsHtml}</tbody>
-            </table>
-            <div class="print-doc-footer">
-                <span>Under 40 Report Dashboard &bull; Report 1: Working Hours</span>
-                <span>Generated: ${escapeHTML(generatedDateStr)}</span>
-            </div>
-        `;
-    } else if (activeTab === 'report2') {
-        if (!appState.leavesData || appState.leavesData.length === 0) {
-            showToast('No Report 2 data to export. Please upload leaves report first.', 'error');
-            return;
-        }
-        const raw = appState.leavesData;
-        const header = raw[0] || [];
-        const printRows = raw.slice(1);
-
-        let thsHtml = header.map(h => `<th>${escapeHTML(h)}</th>`).join('');
-        let trsHtml = printRows.map((r, rIdx) => {
-            return `<tr><td class="center-col" style="color: #4b5563;">${rIdx + 1}</td>${r.map(cell => `<td style="color: #111827;">${escapeHTML(cell)}</td>`).join('')}</tr>`;
-        }).join('');
-
-        reportDisplayName = 'Report 2: Leaves Details';
-        countText = `${printRows.length} entries`;
-
-        printHtml = `
-            <div class="print-header-banner">
-                <div class="print-header-left">
-                    <h1 class="print-header-title">Report 2: Leaves &amp; Sick Details</h1>
-                    <p class="print-header-sub">
-                        <strong>Source:</strong> ${escapeHTML(appState.leavesFileName || 'Leaves CSV')} &bull;
-                        <strong>Total Entries:</strong> ${printRows.length} Records
-                    </p>
-                </div>
-                <div class="print-header-right">
-                    <div><strong>Generated:</strong> ${escapeHTML(generatedDateStr)}</div>
-                </div>
-            </div>
-            <table class="print-table">
-                <thead>
-                    <tr><th class="center-col" style="width: 35px;">#</th>${thsHtml}</tr>
-                </thead>
-                <tbody>${trsHtml}</tbody>
-            </table>
-            <div class="print-doc-footer">
-                <span>Under 40 Report Dashboard &bull; Report 2: Leaves &amp; Sick Details</span>
-                <span>Generated: ${escapeHTML(generatedDateStr)}</span>
-            </div>
-        `;
-    } else {
-        // 'final' (Under 40 Report) or 'all' (All Processed Candidates)
-        const isAllScope = activeTab === 'all';
+    // 'final' (Under 40 Report) or 'all' (All Processed Candidates)
+    const isAllScope = activeTab === 'all';
         const candidateList = isAllScope 
             ? (appState.allProcessedCandidates || []) 
             : ((appState.results && appState.results.length > 0) ? appState.results : (appState.allProcessedCandidates || []));
@@ -3020,7 +2887,6 @@ function renderPrintableReport(options) {
         `;
 
         printHtml = headerHtml + tableHtml + footerHtml;
-    }
 
     if (printableReportContainer) {
         printableReportContainer.innerHTML = printHtml;
@@ -3971,8 +3837,10 @@ window.renderGrandSummary = renderGrandSummary;
 window.renderGrandSummaryTable = renderGrandSummaryTable;
 window.toggleGrandSummarySort = toggleGrandSummarySort;
 window.sendGrandSummaryToSummaryReport = sendGrandSummaryToSummaryReport;
+window.exportToCSV = exportToCSV;
 window.exportGrandSummaryCSV = exportGrandSummaryCSV;
 window.exportGrandSummaryPDF = exportGrandSummaryPDF;
+window.exportSummaryReportCSV = exportSummaryReportCSV;
 window.exportSummaryReportPDF = exportSummaryReportPDF;
 window.clearSummaryReport = clearSummaryReport;
 window.resetGrandSummary = resetGrandSummary;
