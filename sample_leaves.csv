@@ -1,0 +1,7 @@
+Candidate Name,Comfort Working,Sick/leave From Date,Sick/leave To Date,Total Days,Comment,Sick Cert No
+John Doe,Leave,27-04-2026,01-05-2026,5,,SC12345
+Alice Johnson,Leave,02-05-2026,04-05-2026,3,took 24 hours sick leave,SC67890
+Charlie Brown,Yes,,,0.3125,2.5 hrs dentist visit,
+David Miller,No,,,0.0625,took 0.5 hours sick leave,SC44444
+Emily Davis,Leave,08-05-2026,08-05-2026,0.5,took 4 hours leave,
+TEST Peter,Yes,,,1,took 8 hours leave,SC99999

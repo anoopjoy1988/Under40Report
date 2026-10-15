@@ -1,0 +1,13 @@
+Candidate Name,Status,Candidate Type,Application Title,Working Hours,Public Holiday
+John Doe,Active,Contractor,NI - Employed and fully registered with Jobs PLus,32:00,00:00
+Jane Smith,Active,Permanent,NI - Employed and fully registered with Jobs PLus,45:00,00:00
+TEST Peter,Active,Contractor,NI - Employed and fully registered with Jobs PLus,20:00,00:00
+PENDING SHIFT,Active,Contractor,NI - Employed and fully registered with Jobs PLus,30:00,00:00
+Alice Johnson,Active,Contractor,NI - Employed and fully registered with Jobs PLus,28:30:00,08:00
+Bob Wilson,Active,Permanent,NI - Employed and fully registered with Jobs PLus,38:00,00:00
+Charlie Brown,Active,Contractor,NI - Employed and fully registered with Jobs PLus,39:15,00:00
+David Miller,Active,Permanent,NI - Employed and fully registered with Jobs PLus,39:50:00,00:00
+Emily Davis,Active,Contractor,NI - Employed and fully registered with Jobs PLus,35:00,00:00
+Zero Hour Candidate,Active,Contractor,NI - Employed and fully registered with Jobs PLus,00:00,00:00
+Mismatched Title Candidate,Active,Contractor,Software Specialist,30:00,00:00
+Holiday Candidate,Active,Contractor,NI - Employed and fully registered with Jobs PLus,24:00,08:00

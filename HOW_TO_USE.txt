@@ -1,0 +1,52 @@
+=====================================================
+UNDER 40 REPORT DASHBOARD - v1.2 PORTABLE PACKAGE
+=====================================================
+
+HOW TO RUN ON WINDOWS:
+1. Double-click "Under40Report.exe".
+2. The application opens automatically in a clean desktop window.
+3. No installation, admin rights, or extra software required.
+
+HOW TO RUN ON MAC / LINUX:
+- Double-click "start_mac.command" OR open "index.html" in Google Chrome, Safari, or Edge.
+
+KEY FEATURES & WORKFLOW:
+
+1. WEEKLY PROCESSING:
+   - Drag & drop your two weekly CSV reports onto the screen:
+     * Report 1: Working Hours CSV
+     * Report 2: Leaves & Sick Leaves CSV
+   - The dashboard matches candidates, computes missing hours, and lists those under 40 hours.
+   - Enter Client Name, Dispatch Fault, Form of Pay, Informed Client, and Comments.
+
+2. REMOVING PART-TIMERS:
+   - Check the checkbox next to any part-timer and click "Delete Part-Timer(s)".
+   - You can restore deleted candidates at any time using "Part-Timers (X)".
+
+3. GRAND SUMMARY (MONTHLY CONSOLIDATION):
+   - Switch to the "Grand Summary" tab.
+   - Upload multiple weekly saved reports (.json) to consolidate hours over a month.
+   - Filter or sort candidate names (A-Z, Z-A) and total missing hours.
+   - Click "Send to Summary Report" to transfer the consolidated data into the Summary Report.
+   - Click "Clear Weeks" to reset the monthly data.
+
+4. DEDICATED SUMMARY REPORT:
+   - Summary Report operates completely independently from the weekly raw data.
+   - Export CSV: Clean CSV download of summary records.
+   - Export PDF: Clean white paper audit document with candidate names and figures (no graphics).
+   - Clear Summary: Clears the summary report when you are ready for the next batch.
+
+5. CLEAN WHITE PAPER PDF REPORTS:
+   - Every PDF export now features a clean, high-contrast white paper report.
+   - All reports open an interactive print preview first, so you can review before saving or printing.
+
+6. HOW TO GET UPDATES:
+   - Click "File" > "Check for Updates..." at any time.
+   - The app also checks silently in the background when connected to the internet.
+   - When an update is ready, a banner appears with the new version and a 1-click download link.
+   - If offline, the app continues to work normally with zero interruptions.
+
+=====================================================
+Privacy & Security:
+- 100% Client-Side. Your payroll and employee data stays on your computer and is never sent across the internet.
+=====================================================
