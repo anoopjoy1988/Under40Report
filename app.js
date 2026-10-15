@@ -110,6 +110,13 @@ const updateReleaseNotes = document.getElementById('update-release-notes');
 const updateDownloadBtn = document.getElementById('update-download-btn');
 const updateDismissBtn = document.getElementById('update-dismiss-btn');
 const checkUpdatesBtn = document.getElementById('check-updates-btn');
+const exportChooserModal = document.getElementById('export-chooser-modal');
+const exportChooserTitle = document.getElementById('export-chooser-title');
+const exportChooserSubtitle = document.getElementById('export-chooser-subtitle');
+const exportChooserCloseBtn = document.getElementById('export-chooser-close-btn');
+const exportChooserCancelBtn = document.getElementById('export-chooser-cancel-btn');
+const exportChooseUnder40Btn = document.getElementById('export-choose-under40-btn');
+const exportChooseAllBtn = document.getElementById('export-choose-all-btn');
 const pdfOptionsModal = document.getElementById('pdf-options-modal');
 const pdfModalCloseBtn = document.getElementById('pdf-modal-close-btn');
 const closePdfOptionsBtn = document.getElementById('close-pdf-options-btn');
@@ -217,11 +224,27 @@ function setupEventListeners() {
         renderResults();
     });
 
-    exportCsvBtn.addEventListener('click', exportToCSV);
+    exportCsvBtn.addEventListener('click', () => openExportChooserModal('csv'));
     
-    exportPdfBtn.addEventListener('click', () => {
-        triggerPdfReportPrint();
-    });
+    exportPdfBtn.addEventListener('click', () => openExportChooserModal('pdf'));
+
+    if (exportChooseUnder40Btn) {
+        exportChooseUnder40Btn.addEventListener('click', () => handleExportChoice('under40'));
+    }
+    if (exportChooseAllBtn) {
+        exportChooseAllBtn.addEventListener('click', () => handleExportChoice('all'));
+    }
+    if (exportChooserCloseBtn) {
+        exportChooserCloseBtn.addEventListener('click', closeExportChooserModal);
+    }
+    if (exportChooserCancelBtn) {
+        exportChooserCancelBtn.addEventListener('click', closeExportChooserModal);
+    }
+    if (exportChooserModal) {
+        exportChooserModal.addEventListener('click', (e) => {
+            if (e.target === exportChooserModal) closeExportChooserModal();
+        });
+    }
 
     if (csvPreviewCloseBtn) {
         csvPreviewCloseBtn.addEventListener('click', closeCsvPreviewModal);
@@ -422,7 +445,7 @@ function setupEventListeners() {
             }
             if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'p') {
                 e.preventDefault();
-                triggerPdfReportPrint();
+                openExportChooserModal('pdf');
             }
         });
     }
@@ -2273,19 +2296,51 @@ function exportSummaryReportCSV() {
     openCsvPreviewModal(csvData, 'Summary_Report', 'Executive Summary Table');
 }
 
-// CSV Export (File Menu - Exclusively for 'Under 40 Hours' and 'All Processed Candidates')
-function exportToCSV() {
-    const activeTab = appState.activeTab;
+// Export Chooser Modal State & Handlers
+let currentExportAction = 'csv'; // 'csv' or 'pdf'
 
-    if (activeTab !== 'final' && activeTab !== 'all') {
-        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
-        return;
+function openExportChooserModal(type = 'csv') {
+    currentExportAction = type;
+    if (exportChooserTitle) {
+        exportChooserTitle.textContent = type === 'pdf' 
+            ? '📄 Choose Report to Print / Export (PDF)' 
+            : '📥 Choose Report to Export (CSV)';
     }
+    if (exportChooserSubtitle) {
+        exportChooserSubtitle.textContent = type === 'pdf'
+            ? 'Select which report you want to preview and print'
+            : 'Select which report you want to preview and download';
+    }
+    if (exportChooserModal) {
+        exportChooserModal.style.display = 'flex';
+    }
+}
 
-    // For 'final' and 'all' tabs
-    const dataSet = activeTab === 'all' ? appState.allProcessedCandidates : appState.results;
+function closeExportChooserModal() {
+    if (exportChooserModal) {
+        exportChooserModal.style.display = 'none';
+    }
+}
+
+function handleExportChoice(scope) {
+    closeExportChooserModal();
+    if (currentExportAction === 'pdf') {
+        renderPrintableReport(scope);
+    } else {
+        exportToCSV(scope);
+    }
+}
+
+// CSV Export (Exclusively for 'Under 40 Hours' and 'All Processed Candidates')
+function exportToCSV(scope) {
+    let targetScope = (typeof scope === 'string' && (scope === 'all' || scope === 'under40'))
+        ? scope
+        : (appState.activeTab === 'all' ? 'all' : 'under40');
+
+    const isAll = targetScope === 'all';
+    const dataSet = isAll ? appState.allProcessedCandidates : appState.results;
     if (!dataSet || dataSet.length === 0) {
-        showToast('No results to export.', 'error');
+        showToast(`No ${isAll ? 'processed' : 'Under 40'} candidate data to export. Please upload reports first.`, 'error');
         return;
     }
 
@@ -2297,7 +2352,7 @@ function exportToCSV() {
         "Adjusted Hours",
         "Weekly Hours",
         "Missing Hours",
-        ...(activeTab === 'all' ? ["Compliance"] : [])
+        ...(isAll ? ["Compliance"] : [])
     ];
 
     const rows = dataSet.map(c => {
@@ -2309,12 +2364,11 @@ function exportToCSV() {
             formatHours(c.adjustedHours),
             formatHours(c.weeklyHours),
             formatHours(c.missingHours),
-            ...(activeTab === 'all' ? [c.compliant ? "Compliant" : "Under 40h"] : [])
+            ...(isAll ? [c.compliant ? "Compliant" : "Under 40h"] : [])
         ];
     });
 
     const csvData = [headers, ...rows];
-    const isAll = activeTab === 'all';
     openCsvPreviewModal(
         csvData,
         isAll ? 'All_Processed_Candidates' : 'Under_40_Report',
@@ -2749,144 +2803,121 @@ function savePdfOptionsFromModal() {
     saveAppStateToLocalStorage();
 }
 
-function triggerPdfReportPrint(options) {
-    const activeTab = appState.activeTab;
-    if (activeTab !== 'final' && activeTab !== 'all') {
-        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
-        return;
+function triggerPdfReportPrint(scope = 'under40', options = {}) {
+    if (typeof scope === 'object' && scope !== null) {
+        options = scope;
+        scope = appState.activeTab === 'all' ? 'all' : 'under40';
     }
-
-    renderPrintableReport(options);
+    renderPrintableReport(scope, options);
 }
 
-function renderPrintableReport(options) {
+function renderPrintableReport(scope = 'under40', options = {}) {
     if (!printableReportContainer) return;
 
-    const activeTab = appState.activeTab;
-    if (activeTab !== 'final' && activeTab !== 'all') {
-        showToast("File menu export is only available for 'Under 40 Hours' and 'All Processed Candidates'.", "warning");
+    if (typeof scope === 'object' && scope !== null) {
+        options = scope;
+        scope = appState.activeTab === 'all' ? 'all' : 'under40';
+    }
+
+    const isAllScope = scope === 'all';
+    const candidateList = isAllScope 
+        ? (appState.allProcessedCandidates || []) 
+        : ((appState.results && appState.results.length > 0) ? appState.results : (appState.allProcessedCandidates || []));
+
+    if (candidateList.length === 0) {
+        showToast(`No ${isAllScope ? 'processed' : 'Under 40'} candidate data to print. Please upload reports first.`, 'error');
         return;
     }
+
+    const under40List = appState.results || [];
+    const totalShortageDecimal = isAllScope
+        ? (appState.allProcessedCandidates || []).reduce((sum, c) => sum + (c.missingHours || 0), 0)
+        : under40List.reduce((sum, c) => sum + (c.missingHours || 0), 0);
 
     const now = new Date();
     const generatedDateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + 
                              now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-    let printHtml = '';
-    let reportDisplayName = 'Weekly Under 40 Hours Report';
-    let countText = '0 records';
-    let shortageText = '00:00:00';
+    const reportDisplayName = isAllScope ? 'All Processed Candidates Report' : 'Weekly Under 40 Hours Report';
+    const countText = `${candidateList.length} candidates`;
+    const shortageText = formatHours(totalShortageDecimal);
 
-    // 'final' (Under 40 Report) or 'all' (All Processed Candidates)
-    const isAllScope = activeTab === 'all';
-        const candidateList = isAllScope 
-            ? (appState.allProcessedCandidates || []) 
-            : ((appState.results && appState.results.length > 0) ? appState.results : (appState.allProcessedCandidates || []));
+    let periodLabel = appState.weekLabel || `Week ending ${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    const sourceFiles = [
+        appState.hoursFileName ? `Hours: ${escapeHTML(appState.hoursFileName)}` : '',
+        appState.leavesFileName ? `Leaves: ${escapeHTML(appState.leavesFileName)}` : ''
+    ].filter(Boolean).join(' | ') || 'Uploaded Timesheet Reports';
 
-        if (candidateList.length === 0) {
-            showToast('No report data to print. Please upload reports first.', 'error');
-            return;
-        }
-
-        const under40List = appState.results || [];
-        const totalShortageDecimal = under40List.reduce((sum, c) => sum + (c.missingHours || 0), 0);
-
-        reportDisplayName = isAllScope ? 'All Processed Candidates Report' : 'Weekly Under 40 Hours Report';
-        countText = `${candidateList.length} candidates`;
-        shortageText = formatHours(totalShortageDecimal);
-
-        let periodLabel = appState.weekLabel || `Week ending ${now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
-        const sourceFiles = [
-            appState.hoursFileName ? `Hours: ${escapeHTML(appState.hoursFileName)}` : '',
-            appState.leavesFileName ? `Leaves: ${escapeHTML(appState.leavesFileName)}` : ''
-        ].filter(Boolean).join(' | ') || 'Uploaded Timesheet Reports';
-
-        const headerHtml = `
-            <div class="print-header-banner">
-                <div class="print-header-left">
-                    <h1 class="print-header-title">${escapeHTML(reportDisplayName)}</h1>
-                    <p class="print-header-sub">
-                        <strong>Period:</strong> ${escapeHTML(periodLabel)} &bull; 
-                        <strong>Scope:</strong> ${isAllScope ? 'All Processed Candidates' : 'Candidates Under 40 Hours Only'} &bull;
-                        <strong>Target:</strong> 40.00h / week
-                    </p>
-                </div>
-                <div class="print-header-right">
-                    <div><strong>Generated:</strong> ${escapeHTML(generatedDateStr)}</div>
-                    <div><strong>Source:</strong> ${sourceFiles}</div>
-                </div>
+    const headerHtml = `
+        <div class="print-header-banner">
+            <div class="print-header-left">
+                <h1 class="print-header-title">${escapeHTML(reportDisplayName)}</h1>
+                <p class="print-header-sub">
+                    <strong>Period:</strong> ${escapeHTML(periodLabel)} &bull; 
+                    <strong>Scope:</strong> ${isAllScope ? 'All Processed Candidates' : 'Candidates Under 40 Hours Only'} &bull;
+                    <strong>Target:</strong> 40.00h / week
+                </p>
             </div>
+            <div class="print-header-right">
+                <div><strong>Generated:</strong> ${escapeHTML(generatedDateStr)}</div>
+                <div><strong>Source:</strong> ${sourceFiles}</div>
+            </div>
+        </div>
+    `;
+
+    let rowsHtml = '';
+    candidateList.forEach((c, idx) => {
+        const isUnder = !c.compliant;
+        const statusBadge = isUnder 
+            ? `<span class="print-deficit-badge">-${formatHours(c.missingHours)}</span>`
+            : `<span style="color: #15803d; font-weight: 700;">COMPLIANT</span>`;
+
+        rowsHtml += `
+            <tr>
+                <td class="center-col" style="font-weight: 600; color: #4b5563;">${idx + 1}</td>
+                <td style="color: #111827;">
+                    <div class="print-candidate-name" style="color: #111827; font-weight: 700;">${escapeHTML(c.candidateName)}</div>
+                </td>
+                <td class="num-col" style="color: #111827;">${formatHours(c.originalHours)}</td>
+                <td class="num-col" style="color: #111827;">${formatHours(c.leaveHours)}</td>
+                <td class="num-col" style="color: #111827;">${formatHours(c.publicHoliday)}</td>
+                <td class="num-col" style="font-weight: 700; color: #111827;">${formatHours(c.adjustedHours)}</td>
+                <td class="num-col" style="color: #4b5563;">${formatHours(c.thresholdHours || 40)}</td>
+                <td class="center-col">${statusBadge}</td>
+                ${isAllScope ? `<td class="center-col" style="font-weight: 700; color: ${isUnder ? '#dc2626' : '#15803d'};">${isUnder ? 'Under 40' : 'Compliant'}</td>` : ''}
+            </tr>
         `;
+    });
 
-        let rowsHtml = '';
-        candidateList.forEach((c, idx) => {
-            const isUnder = !c.compliant;
-            const statusBadge = isUnder 
-                ? `<span class="print-deficit-badge">-${formatHours(c.missingHours)}</span>`
-                : `<span style="color: #15803d; font-weight: 700;">COMPLIANT</span>`;
-
-            let faultClass = 'print-badge-neutral';
-            const faultLower = (c.dispatchFault || '').toLowerCase();
-            if (faultLower === 'candidate') faultClass = 'print-badge-candidate';
-            else if (faultLower === 'client') faultClass = 'print-badge-client';
-            else if (faultLower === 'agency') faultClass = 'print-badge-agency';
-
-            const faultBadge = c.dispatchFault 
-                ? `<span class="print-badge ${faultClass}">${escapeHTML(c.dispatchFault)}</span>` 
-                : `<span style="color: #9ca3af;">—</span>`;
-
-            rowsHtml += `
+    const tableHtml = `
+        <table class="print-table">
+            <thead>
                 <tr>
-                    <td class="center-col" style="font-weight: 600; color: #4b5563;">${idx + 1}</td>
-                    <td style="color: #111827;">
-                        <div class="print-candidate-name" style="color: #111827; font-weight: 700;">${escapeHTML(c.candidateName)}</div>
-                    </td>
-                    <td style="color: #111827;">${escapeHTML(c.clientName || '—')}</td>
-                    <td class="num-col" style="color: #111827;">${formatHours(c.originalHours)}</td>
-                    <td class="num-col" style="color: #111827;">${formatHours(c.leaveHours)}</td>
-                    <td class="num-col" style="color: #111827;">${formatHours(c.publicHoliday)}</td>
-                    <td class="num-col" style="font-weight: 700; color: #111827;">${formatHours(c.adjustedHours)}</td>
-                    <td class="center-col">${statusBadge}</td>
-                    <td class="center-col">${faultBadge}</td>
-                    <td class="center-col" style="font-size: 7.2pt; color: #111827;">${escapeHTML(c.formOfPay || '—')}</td>
-                    <td class="center-col" style="font-size: 7.2pt; color: #111827;">${escapeHTML(c.informedClient || '—')}</td>
-                    <td style="font-size: 7.2pt; max-width: 160px; color: #111827;">${escapeHTML(c.comments || '—')}</td>
+                    <th class="center-col" style="width: 35px;">#</th>
+                    <th>Candidate Name</th>
+                    <th class="num-col" style="width: 90px;">Worked</th>
+                    <th class="num-col" style="width: 90px;">Leaves</th>
+                    <th class="num-col" style="width: 85px;">Holiday</th>
+                    <th class="num-col" style="width: 100px;">Total Adj.</th>
+                    <th class="num-col" style="width: 90px;">Target</th>
+                    <th class="center-col" style="width: 110px;">Shortage</th>
+                    ${isAllScope ? `<th class="center-col" style="width: 110px;">Compliance</th>` : ''}
                 </tr>
-            `;
-        });
+            </thead>
+            <tbody>
+                ${rowsHtml}
+            </tbody>
+        </table>
+    `;
 
-        const tableHtml = `
-            <table class="print-table">
-                <thead>
-                    <tr>
-                        <th class="center-col" style="width: 25px;">#</th>
-                        <th>Candidate Name</th>
-                        <th style="width: 110px;">Client Name</th>
-                        <th class="num-col" style="width: 60px;">Worked</th>
-                        <th class="num-col" style="width: 60px;">Leaves</th>
-                        <th class="num-col" style="width: 55px;">Holiday</th>
-                        <th class="num-col" style="width: 65px;">Total Adj.</th>
-                        <th class="center-col" style="width: 75px;">Shortage</th>
-                        <th class="center-col" style="width: 75px;">Fault</th>
-                        <th class="center-col" style="width: 65px;">Pay Form</th>
-                        <th class="center-col" style="width: 65px;">Informed</th>
-                        <th style="width: 140px;">Manager Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${rowsHtml}
-                </tbody>
-            </table>
-        `;
+    const footerHtml = `
+        <div class="print-doc-footer">
+            <span>Under 40 Report Dashboard &bull; ${escapeHTML(reportDisplayName)}</span>
+            <span>Generated: ${escapeHTML(generatedDateStr)}</span>
+        </div>
+    `;
 
-        const footerHtml = `
-            <div class="print-doc-footer">
-                <span>Under 40 Report Dashboard &bull; ${escapeHTML(reportDisplayName)}</span>
-                <span>Generated: ${escapeHTML(generatedDateStr)}</span>
-            </div>
-        `;
-
-        printHtml = headerHtml + tableHtml + footerHtml;
+    printHtml = headerHtml + tableHtml + footerHtml;
 
     if (printableReportContainer) {
         printableReportContainer.innerHTML = printHtml;
@@ -3827,6 +3858,9 @@ window.loadReportFromJSONText = loadReportFromJSONText;
 window.openCsvPreviewModal = openCsvPreviewModal;
 window.closeCsvPreviewModal = closeCsvPreviewModal;
 window.confirmCsvDownload = confirmCsvDownload;
+window.openExportChooserModal = openExportChooserModal;
+window.closeExportChooserModal = closeExportChooserModal;
+window.handleExportChoice = handleExportChoice;
 window.openPdfOptionsModal = openPdfOptionsModal;
 window.closePdfOptionsModal = closePdfOptionsModal;
 window.triggerPdfReportPrint = triggerPdfReportPrint;

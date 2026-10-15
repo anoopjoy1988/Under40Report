@@ -1034,10 +1034,106 @@ tr.candidate-row.expanded + .details-row .details-content {
     display: none;
 }
 
-/* PDF Options Modal & Settings */
+.modal-card.modal-md {
+    max-width: 560px;
+    width: 95%;
+}
+
 .modal-card.modal-lg {
     max-width: 620px;
     width: 95%;
+}
+
+/* Export Chooser Modal Styling */
+.export-options-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+.export-option-card {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 1.1rem 1.25rem;
+    background: #1e2238;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.export-option-card:hover {
+    background: #252b45;
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.export-option-icon {
+    font-size: 2rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.export-option-icon.warning-icon {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.export-option-icon.primary-icon {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.export-option-details {
+    flex: 1;
+}
+
+.export-option-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.export-option-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary, #94a3b8);
+    line-height: 1.35;
+    margin-bottom: 0.4rem;
+}
+
+.export-option-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.badge-primary {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
 /* CSV Preview Modal & Table Styling */
