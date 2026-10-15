@@ -3,8 +3,8 @@
 // Application Version & Update Configuration
 const APP_VERSION = '1.2';
 const UPDATE_CONFIG = {
-    versionUrl: 'https://raw.githubusercontent.com/jahanvishah/Under40Report/main/version.json',
-    releasesUrl: 'https://github.com/jahanvishah/Under40Report/releases/latest',
+    versionUrl: 'https://raw.githubusercontent.com/anoopjoy1988/Under40Report/main/version.json',
+    releasesUrl: 'https://github.com/anoopjoy1988/Under40Report/releases/latest',
     checkTimeoutMs: 4000
 };
 
