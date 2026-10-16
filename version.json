@@ -1,6 +1,6 @@
 {
-  "version": "1.2",
-  "releaseDate": "2026-10-15",
-  "releaseNotes": "Clean white paper PDF reports, independent Summary Report export, and performance optimizations.",
+  "version": "1.3",
+  "releaseDate": "2026-10-16",
+  "releaseNotes": "v1.3 Release: Added dedicated System Validations & Enterprise Security architecture, expanded Calculation Drawer visualizer, Monthly Grand Summary workflow, and updated Management Guide PDF.",
   "downloadUrl": "https://github.com/anoopjoy1988/Under40Report/releases/latest"
 }

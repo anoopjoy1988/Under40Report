@@ -1,7 +1,7 @@
 // Application logic for Under 40 Report Dashboard
 
 // Application Version & Update Configuration
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 const UPDATE_CONFIG = {
     versionUrl: 'https://raw.githubusercontent.com/anoopjoy1988/Under40Report/main/version.json',
     releasesUrl: 'https://github.com/anoopjoy1988/Under40Report/releases/latest',
