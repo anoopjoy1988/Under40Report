@@ -2142,6 +2142,71 @@ select option,
     padding: 2rem 1.5rem;
 }
 
+/* Grand Summary Week Cell with Days Not Worked Input */
+.grand-week-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.grand-days-input {
+    width: 32px;
+    height: 23px;
+    padding: 1px 3px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    transition: all 0.15s ease;
+}
+
+.grand-days-input:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(30, 41, 59, 0.85);
+}
+
+.grand-days-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: #1e1b4b;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+.grand-days-input.has-value {
+    border-color: #f59e0b;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.grand-days-input::-webkit-inner-spin-button,
+.grand-days-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.grand-days-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.grand-days-input:disabled,
+.grand-days-input.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: rgba(15, 23, 42, 0.45);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+}
+
+.grand-days-input.disabled:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.08);
+}
+
 /* Grand Summary Sorting & Filtering Controls */
 .grand-filter-group {
     display: flex;

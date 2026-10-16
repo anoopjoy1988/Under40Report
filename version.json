@@ -1,6 +1,6 @@
 {
-  "version": "1.3",
+  "version": "1.4",
   "releaseDate": "2026-10-16",
-  "releaseNotes": "v1.3 Release: Added dedicated System Validations & Enterprise Security architecture, expanded Calculation Drawer visualizer, Monthly Grand Summary workflow, and updated Management Guide PDF.",
+  "releaseNotes": "v1.4 Release: Added Midweek Start candidate days adjustment in Monthly Grand Summary with strict integer and deficit-limit validations, Full Project Save & Open (.u40proj) persistence, and updated Windows executable.",
   "downloadUrl": "https://github.com/anoopjoy1988/Under40Report/releases/latest"
 }
