@@ -74,8 +74,9 @@ namespace Under40ReportApp
                     // --app= opens as an isolated desktop window with normal title bar
                     // --user-data-dir= isolates from background Edge processes
                     // --start-maximized maximizes window without hiding title bar
+                    // --disable-dev-tools locks out Developer Tools at the engine level
                     psi.Arguments = string.Format(
-                        "--app=\"{0}\" --user-data-dir=\"{1}\" --start-maximized",
+                        "--app=\"{0}\" --user-data-dir=\"{1}\" --start-maximized --disable-dev-tools",
                         fileUri, profileDir);
                     psi.WindowStyle = ProcessWindowStyle.Maximized;
                     psi.UseShellExecute = false;
